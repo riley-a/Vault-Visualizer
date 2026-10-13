@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Verkada Co-Term Visualizer</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-annotation/3.0.1/chartjs-plugin-annotation.min.js"></script>
+</head>
+<body>
+  <div class="wrap">
+    <header class="app-header">
+      <div>
+        <h1>Verkada Co-Term Visualizer</h1>
+        <div class="subtitle">See how one new license purchase merges into an org's existing licensing, line by line.</div>
+      </div>
+      <div class="header-inputs">
+        <div class="field">
+          <label for="org-name">Org name</label>
+          <input type="text" id="org-name" placeholder="Acme Stores">
+        </div>
+        <div class="field">
+          <label for="as-of-date">As-of date</label>
+          <input type="date" id="as-of-date">
+        </div>
+        <div class="field">
+          <label for="current-expiration-date">Current org expiration (before)</label>
+          <input type="date" id="current-expiration-date">
+        </div>
+      </div>
+    </header>
+
+    <div id="error-banner" class="error-banner" style="display:none;"></div>
+
+    <div class="card">
+      <div class="section-label" style="margin-bottom:.75rem;">Device breakdown (existing)</div>
+      <div class="hint" style="margin-bottom:.75rem;">One shared expiration date applies to every line's existing licensing. Claimed devices (not active) are what burn license time.</div>
+      <div class="toolbar">
+        <button id="add-column-btn" type="button">+ Add license</button>
+        <div id="picker-menu" class="picker-menu" style="display:none;"></div>
+      </div>
+      <div id="columns-grid" class="columns-grid"></div>
+      <div id="empty-state" class="empty-state">No license lines yet. Click "+ Add license" to get started.</div>
+    </div>
+
+    <div class="card" id="new-license-card" style="margin-top:1.5rem;">
+      <div class="section-label" style="margin-bottom:.75rem;">New license (the purchase)</div>
+      <div class="hint" style="margin-bottom:.75rem;">Exactly one new purchase at a time. Pick any product line -- it can be one already in the breakdown above, or a brand-new one (starts at 0 claimed/0 active). Capacity increase adds new devices; renewal only extends licensing for devices already claimed and never changes device/unit counts.</div>
+      <div class="toolbar" style="margin-bottom:0;">
+        <button id="add-new-license-product-btn" type="button" class="secondary">+ Choose product</button>
+        <div id="new-license-picker-menu" class="picker-menu" style="display:none;"></div>
+      </div>
+      <div id="new-license-form-wrap" style="margin-top:.75rem;"></div>
+    </div>
+
+    <footer class="compute-bar">
+      <button id="clear-results-btn" type="button" class="ghost">Clear</button>
+      <button id="compute-btn" type="button">Visualize</button>
+    </footer>
+
+    <div id="results" class="results" style="display:none;">
+      <div class="card callout" id="callout"></div>
+
+      <div class="card">
+        <div class="section-label" style="margin-bottom:.75rem;">Co-term impact by product line</div>
+        <div class="chart-wrap">
+          <canvas id="coterm-chart"></canvas>
+        </div>
+        <div class="chart-legend">
+          <span class="legend-item"><span class="legend-swatch" style="background:#4f8cff;"></span> Existing (standalone trajectory today)</span>
+          <span class="legend-item"><span class="legend-swatch" style="background:#34c77b;"></span> Extension (gain from new purchase)</span>
+          <span class="legend-item"><span class="legend-swatch" style="background:#ef5a5a;"></span> Reduction (if negative)</span>
+          <span class="legend-item"><span class="legend-line"></span> Org co-term date (pooled, after purchase)</span>
+        </div>
+      </div>
+
+      <div class="card table-scroll">
+        <table class="results-table" id="results-table">
+          <thead>
+            <tr>
+              <th>Product line</th>
+              <th>Claimed before</th>
+              <th>Claimed after</th>
+              <th>Standalone date before</th>
+              <th>Standalone date after</th>
+              <th>Delta (days)</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
